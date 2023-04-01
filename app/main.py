@@ -28,11 +28,12 @@ def tests():
             if not re.match("^(07|01)\d{8}$", patient_phone):
                 return "Invalid phone number", 400
             # TODO: Implement data persistency to db
-            add_result(patient_phone, patient_name)
+            # add_result(patient_phone, patient_name)
             return "Data successfully stored in database", 201
         else:
             # Required fields are missing, return an error response
             return "Missing required fields: {}".format(", ".join(set(required_fields) - set(data))), 400
 
     if request.method == "GET":
-        return all_results()
+        pass
+        # return all_results()
