@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from .models import Result
 from .utils import add_result, all_results
 from . import db
+import json
 import re
 
 
@@ -13,7 +14,7 @@ def index():
     return "<p>Hello World</>"
 
 
-@main.route('/tests', methods=['POST'])
+@main.route('/tests', methods=['POST', 'GET'])
 def tests():
     if request.method == "POST":
         data = request.json
@@ -29,13 +30,13 @@ def tests():
             if not re.match("^(07|01)\d{8}$", patient_phone):
                 return "Invalid phone number", 400
             # TODO: Implement data persistency to db
-            # add_result(patient_phone, patient_name)
+            add_result(patient_phone, patient_name)
             return "Data successfully stored in database", 201
         else:
             # Required fields are missing, return an error response
             return "Missing required fields: {}".format(", ".join(set(required_fields) - set(data))), 400
 
     if request.method == "GET":
-        pass
-        # return all_results()
+        results = all_results()
+        return json.dumps(results)
 
