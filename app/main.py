@@ -59,7 +59,7 @@ def new_delivery_report():
         patient_phone_number = "+254" + phone_number[1:]
         if find_patient(patient_phone_number):
             update_patient(patient_phone_number,
-                        first_msg_time=datetime.now(), subscription_status="OK")
+                           first_msg_time=datetime.now(), subscription_status="1")
 
         data = {
             "status": status,
@@ -98,8 +98,24 @@ def user_response():
         link_id = request.values.get("linkId", None)
 
         if text == "CONFIRM":
-            send_sms(
-                from_user, "Appointment confirmed\nText STOP to stop receiving updates")
+            patient = find_patient(from_user)
+            if patient:
+                if patient.appointment_status != "confirmed":
+                    datetime_object = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+                    update_patient(from_user, first_res_time=datetime_object, appointment_status="confirmed")
+                    print(date)
+                    send_sms(
+                        from_user, "Please collect your results from facilityName within the next 3 days\nreply with 'STOP' to stop receiving updates")
+                else:
+                    pass
+            else:
+                pass
+        elif text == "STOP":
+            if find_patient(from_user):
+                update_patient(subscription_status="0")
+                send_sms(from_user, "You have been successfully unsubscribed")
+            else:
+                pass
 
         data = {
             "date": date,
@@ -126,9 +142,12 @@ def patient_data():
 
     serialized = []
     for patient in results:
-            serialized.append({
-                'id': patient.id,
-                'phone': patient.phone,
-                # 'description': patient.
-            })
+        serialized.append({
+            'id': patient.id,
+            'phone': patient.phone,
+            'delivered_time': patient.first_msg_time,
+            'response_time': patient.first_res_time,
+            'subscription': patient.subscription_status,
+            'result_deadline': patient.latest_slot
+        })
     return jsonify(serialized)
