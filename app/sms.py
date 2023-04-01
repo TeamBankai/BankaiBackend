@@ -1,5 +1,6 @@
 # works with both python 2 and 3
 from __future__ import print_function
+import datetime 
 
 import africastalking
 
@@ -19,10 +20,10 @@ class SMS:
 
 	def send(self):
 			# Set the numbers you want to send to in international format
-			recipients = ["+254798589847"]
+			recipients = ["+2547989847"]
 
 			# Set your message
-			message = "Hello, your results are ready. Kindly come and pick them within the next 7 working Days \n @TeamBankai ";
+			message = "Hello, your results are ready. Kindly come and pick them within the next 7 working Days() \n @TeamBankai " ;
 
 			# Set your shortCode or senderId
 			sender = "72225"
@@ -35,3 +36,5 @@ class SMS:
 
 if __name__ == '__main__':
 	SMS().send()
+	
+	
