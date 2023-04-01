@@ -8,12 +8,11 @@ import re
 main = Blueprint('main', __name__)
 
 
-@main.route('/')
+@main.route('/hae')
 def index():
-    return "<p>Hello World</>"
+    return "<p>Hello World<p/>"
 
-
-@main.route('/tests', methods=['POST'])
+@main.route('/tests', methods=['POST', "GET"])
 def tests():
     if request.method == "POST":
         data = request.json
@@ -28,12 +27,21 @@ def tests():
             if not re.match("^(07|01)\d{8}$", patient_phone):
                 return "Invalid phone number", 400
             # TODO: Implement data persistency to db
-            # add_result(patient_phone, patient_name)
+            add_result(patient_phone, patient_name)
             return "Data successfully stored in database", 201
         else:
             # Required fields are missing, return an error response
             return "Missing required fields: {}".format(", ".join(set(required_fields) - set(data))), 400
 
     if request.method == "GET":
-        pass
-        # return all_results()
+        results = all_results()
+        serialized = []
+        for result in results:
+            serialized.append({
+                'id': result.id,
+                'name': result.patient_name,
+                'description': result.patient_phone
+            })
+        return jsonify(serialized)
+
+
