@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, make_response
 from .models import Result
 from .utils import add_result, all_results
 from . import db
-import json
+from .sms import send_sms
 import re
 
 
@@ -31,6 +31,10 @@ def tests():
                 return "Invalid phone number", 400
             # TODO: Implement data persistency to db
             add_result(patient_phone, patient_name)
+
+            # add_result(patient_phone, patient_name)
+            message = f"Hello {patient_name} your test results are available input 1 to confirm collection"
+            send_sms("+254798589847", message)
             return "Data successfully stored in database", 201
         else:
             # Required fields are missing, return an error response
