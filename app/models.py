@@ -12,3 +12,6 @@ class DeliveryReports(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     time = db.Column(db.DateTime,  default=func.now())
     status = db.Column(db.String(20))
+    network_code = db.Column(db.String(10))
+    failure_reason = db.Column(db.String(50))
+    phone_number = db.Column(db.String(20))

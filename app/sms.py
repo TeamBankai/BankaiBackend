@@ -1,32 +1,23 @@
 import os
 import requests
 from urllib.parse import urlencode
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
 
 username = "sandbox"
-api_key = "47246e11613b9f71c704e8d8dea56ae4f2c2fae8382152572fc8c56c6f8426f5"
-
-# africastalking.initialize(username, api_key)
-# sms = africastalking.SMS
-
-
-# def send_sms(phone: str, message: str):
-#     def on_finish(error, response):
-#         if error is not None:
-#             raise error
-#         print(response)
-
-#     sms.send_premium(message,"72225", [phone], callback=on_finish)
+api_key = os.environ.get('API_KEY', None)
+url = "https://api.sandbox.africastalking.com/version1/messaging"
 
 
 def send_sms(phone: str, message: str):
-    url = "https://api.sandbox.africastalking.com/version1/messaging"
-    api_key = "47246e11613b9f71c704e8d8dea56ae4f2c2fae8382152572fc8c56c6f8426f5"
-
     data = urlencode({
         "username": "sandbox",
         "to": phone,
         "message": message,
-        "from": os.environ.get('SHORT_CODE', '72225'),
+        "from": os.environ.get('SHORT_CODE', '7633'),
     })
 
     headers = {
