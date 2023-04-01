@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from .models import Result
 from .utils import add_result, all_results
 from . import db
+import json
 import re
 
 
@@ -12,11 +13,13 @@ main = Blueprint('main', __name__)
 def index():
     return "<p>Hello World<p/>"
 
-@main.route('/tests', methods=['POST', "GET"])
+
+@main.route('/tests', methods=['POST', 'GET'])
 def tests():
     if request.method == "POST":
         data = request.json
         required_fields = ['patient_name', 'patient_phone']
+
 
         if all(field in data for field in required_fields):
             patient_name = data.get('patient_name')
@@ -35,6 +38,7 @@ def tests():
 
     if request.method == "GET":
         results = all_results()
+
         serialized = []
         for result in results:
             serialized.append({
@@ -43,5 +47,6 @@ def tests():
                 'description': result.patient_phone
             })
         return jsonify(serialized)
+
 
 
