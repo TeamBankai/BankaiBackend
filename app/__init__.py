@@ -10,7 +10,8 @@ def create_app():
     app.config["FLASK_DEBUG"] = True
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
-    from .models import Result
+
+    from .models import Result, Patient, DeliveryReports
 
     db.init_app(app)
     with app.app_context():
