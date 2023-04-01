@@ -30,7 +30,7 @@ def tests():
         # new_result = Result(patient_name=patient_name, patient_phone=patient_phone, result_status=result_status)
         # db.add(new_result)
         # db.commit()
-        return "Data successfully stored in database", 201
+        return "success", 201
     else:
         # Required fields are missing, return an error response
         return "Missing required fields: {}".format(", ".join(set(required_fields) - set(data))), 400
