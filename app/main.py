@@ -43,12 +43,12 @@ def tests():
             serialized.append({
                 'id': result.id,
                 'name': result.patient_name,
-                'description': result.patient_phone
+                'phone': result.patient_phone
             })
         return jsonify(serialized)
 
 
-@main.route("/delivery-reports", methods=['POST', 'GET'])
+@main.route("/delivery-reports", methods=['POST', 'GET', 'PUT'])
 def new_delivery_report():
     if request.method == "POST":
         status = request.values.get("status", None)
@@ -88,7 +88,7 @@ def new_delivery_report():
         return jsonify(serialized)
 
 
-@main.route("/user-response", methods=['POST', 'GET'])
+@main.route("/user-response", methods=['POST', 'GET', 'PUT'])
 def user_response():
     if request.method == 'POST':
         date = request.values.get("date")
@@ -97,12 +97,22 @@ def user_response():
         text = request.values.get("text")
         link_id = request.values.get("linkId", None)
 
+        data = {
+            "date": date,
+            "from_user": from_user,
+            "message_id": message_id,
+            "text": text,
+            "link_id": link_id
+        }
+
         if text == "CONFIRM":
             patient = find_patient(from_user)
             if patient:
                 if patient.appointment_status != "confirmed":
-                    datetime_object = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-                    update_patient(from_user, first_res_time=datetime_object, appointment_status="confirmed")
+                    datetime_object = datetime.strptime(
+                        date, '%Y-%m-%d %H:%M:%S')
+                    update_patient(
+                        from_user, first_res_time=datetime_object, appointment_status="confirmed")
                     print(date)
                     send_sms(
                         from_user, "Please collect your results from facilityName within the next 3 days\nreply with 'STOP' to stop receiving updates")
@@ -117,15 +127,10 @@ def user_response():
             else:
                 pass
 
-        data = {
-            "date": date,
-            "from_user": from_user,
-            "message_id": message_id,
-            "text": text,
-            "link_id": link_id
-        }
-
     return jsonify(data)
+
+    # if request.method == 'GET':
+    #     pass
 
 
 @main.route("/opt-outs", methods=['POST', 'GET'])

@@ -24,3 +24,7 @@ class Patient(db.Model):
     appointment_status = db.Column(db.String(10))
     subscription_status = db.Column(db.String(10))
     latest_slot = db.Column(db.DateTime)
+
+class FeedBack(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String)
