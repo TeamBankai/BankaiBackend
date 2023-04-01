@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify, make_response
-from .models import Result
 from .utils import add_result, all_results
 from . import db
 from .sms import send_sms
@@ -52,5 +51,13 @@ def tests():
             })
         return jsonify(serialized)
 
+
+
+@main.route("/delivery-reports", methods=['POST', 'GET'])
+def new_delivery_report():
+    status   = request.values.get("sessionId", None)
+    network_code  = request.values.get("serviceCode", None)
+    phone_number = request.values.get("phoneNumber", None)
+    text         = request.values.get("text", "default")
 
 
