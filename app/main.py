@@ -188,7 +188,7 @@ def patient_data():
     results = all_patients()
 
     serialized = []
-    for patient in results:
+    for patient in results: 
         turnaround_time = (patient.first_res_time -
                            patient.first_msg_time).total_seconds()
 

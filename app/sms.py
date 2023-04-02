@@ -17,7 +17,7 @@ def send_sms(phone: str, message: str):
         "username": "sandbox",
         "to": phone,
         "message": message,
-        "from": os.environ.get('SHORT_CODE', '7633'),
+        "from": '7633'
     })
 
     headers = {
@@ -32,4 +32,5 @@ def send_sms(phone: str, message: str):
         return False
 
     print("SMS sent successfully")
+    print(res.text)
     return True
