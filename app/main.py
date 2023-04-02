@@ -189,6 +189,12 @@ def patient_data():
 
     serialized = []
     for patient in results:
+        turnaround_time = (patient.first_res_time -
+                           patient.first_msg_time).total_seconds()
+
+        hours = int(turnaround_time / 3600)
+        minutes = int((turnaround_time % 3600) / 60)
+        seconds = int(turnaround_time % 60)
         serialized.append({
             'id': patient.id,
             'phone': patient.phone,
@@ -196,6 +202,9 @@ def patient_data():
             'response_time': patient.first_res_time,
             'subscription': patient.subscription_status,
             'result_deadline': patient.latest_slot,
-            'tat': f"{patient.first_res_time - patient.first_msg_time}"
+            'tat': f"{hours:02d}:{minutes:02d}:{seconds:02d}"
         })
     return jsonify(serialized)
+
+
+# 'tat': f"{hours:02d}:{minutes:02d}:{seconds:02d}"
