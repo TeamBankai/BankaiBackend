@@ -142,11 +142,12 @@ def user_response():
             # else:
             #     pass
         elif text == "STOP":
-            if find_patient(from_user):
-                update_patient(subscription_status="0")
-                send_sms(from_user, "You have been successfully unsubscribed")
-            else:
-                pass
+            # if find_patient(from_user):
+            #     update_patient(subscription_status="0")
+            # send_sms(from_user, "You have been successfully unsubscribed")
+            pass
+        else:
+            pass
 
     return jsonify(data)
 
@@ -188,7 +189,7 @@ def patient_data():
     results = all_patients()
 
     serialized = []
-    for patient in results: 
+    for patient in results:
         turnaround_time = (patient.first_res_time -
                            patient.first_msg_time).total_seconds()
 
