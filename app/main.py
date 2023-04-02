@@ -1,8 +1,10 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request, jsonify, make_response, redirect, url_for
 from .utils import add_result, all_results, new_report, delivery_reports, new_patient, update_patient, find_patient, all_patients
 from . import db
 from .sms import send_sms
 from datetime import datetime
+from .models import Patient
+import requests
 import re
 
 
@@ -26,10 +28,10 @@ def tests():
 
             add_result(patient_phone, patient_name)
             phone_number = "+254" + patient_phone[1:]
-            new_patient(phone_number)
+            new_patient(patient_phone)
 
-            message = f"Hello {patient_name} your test results are available reply with 'CONFIRM' to confirm collection"
-            send_sms("+254777287562", message)
+            message = f"Hello {patient_name} your test results are available reply with 'CONFIRM' to confirm collection\nReply with 'STOP' to opt out"
+            send_sms(phone_number, message)
             return "Data successfully stored in database", 201
         else:
             # Required fields are missing, return an error response
@@ -56,10 +58,18 @@ def new_delivery_report():
         phone_number = request.values.get("phoneNumber", None)
         failure_reason = request.values.get("failureReason")
 
-        patient_phone_number = "+254" + phone_number[1:]
-        if find_patient(patient_phone_number):
-            update_patient(patient_phone_number,
-                           first_msg_time=datetime.now(), subscription_status="1")
+        # if find_patient(phone_number):
+        #     update_patient(phone_number,
+        #                    first_msg_time=datetime.now(), subscription_status="1")
+        phone = "0" + phone_number[4:]
+        url = f"http://localhost:5000/update-delivery-time/{phone}"
+
+        payload = {}
+        headers = {}
+
+        response = requests.request(
+            "PUT", url, headers=headers, data=payload)
+        print(response.text)
 
         data = {
             "status": status,
@@ -94,7 +104,7 @@ def user_response():
         date = request.values.get("date")
         from_user = request.values.get("from")
         message_id = request.values.get("id", None)
-        text = request.values.get("text")
+        text = request.values.get("text").strip()
         link_id = request.values.get("linkId", None)
 
         data = {
@@ -106,20 +116,31 @@ def user_response():
         }
 
         if text == "CONFIRM":
-            patient = find_patient(from_user)
-            if patient:
-                if patient.appointment_status != "confirmed":
-                    datetime_object = datetime.strptime(
-                        date, '%Y-%m-%d %H:%M:%S')
-                    update_patient(
-                        from_user, first_res_time=datetime_object, appointment_status="confirmed")
-                    print(date)
-                    send_sms(
-                        from_user, "Please collect your results from facilityName within the next 3 days\nreply with 'STOP' to stop receiving updates")
-                else:
-                    pass
-            else:
-                pass
+            # patient = find_patient(from_user)
+            # if patient:
+            #     if patient.appointment_status != "confirmed":
+            #         datetime_object = datetime.strptime(
+            #             date, '%Y-%m-%d %H:%M:%S')
+            #         # update_patient(
+            #         #     from_user, first_res_time=datetime_object, appointment_status="confirmed")
+            # send_sms(
+            #     from_user, "Please collect your results from facilityName within the next 3 days\nreply with 'STOP' to stop opt out")
+            # calling update-appointments route
+            phone_number = "0" + from_user[4:]
+            url = f"http://localhost:5000/update-appointments/{phone_number}"
+
+            payload = {}
+            headers = {}
+
+            response = requests.request(
+                "PUT", url, headers=headers, data=payload)
+            print(response.text)
+            # requests.put(url_for('main.update_appointments',  phone={phone_number}))
+            # return redirect(url_for('main.update_appointments', phone=from_user))
+            #     else:
+            #         pass
+            # else:
+            #     pass
         elif text == "STOP":
             if find_patient(from_user):
                 update_patient(subscription_status="0")
@@ -131,6 +152,27 @@ def user_response():
 
     # if request.method == 'GET':
     #     pass
+
+
+@main.route("/update-appointments/<phone>", methods=['PUT'])
+def update_appointments(phone):
+    patient = Patient.query.filter_by(phone=phone).first_or_404()
+    patient.appointment_status = "confirmed"
+    patient.first_res_time = datetime.now()
+    db.session.commit()
+
+    send_sms(phone, "Please collect your results from facilityName within the next 3 days\nreply with 'STOP' to stop receiving updates")
+
+    return jsonify({"message": "appointment updated successfully"})
+
+
+@main.route("/update-delivery-time/<phone>", methods=['PUT'])
+def update_delivery_time(phone):
+    patient = Patient.query.filter_by(phone=phone).first_or_404()
+    patient.first_msg_time = datetime.now()
+    db.session.commit()
+
+    return jsonify({"message": "delivery time updated"})
 
 
 @main.route("/opt-outs", methods=['POST', 'GET'])
@@ -153,6 +195,7 @@ def patient_data():
             'delivered_time': patient.first_msg_time,
             'response_time': patient.first_res_time,
             'subscription': patient.subscription_status,
-            'result_deadline': patient.latest_slot
+            'result_deadline': patient.latest_slot,
+            'tat': f"{patient.first_res_time - patient.first_msg_time}"
         })
     return jsonify(serialized)

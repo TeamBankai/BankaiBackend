@@ -28,3 +28,13 @@ class Patient(db.Model):
 class FeedBack(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String)
+
+
+class Appointment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    phone = db.Column(db.String(15))
+    first_msg_time = db.Column(db.DateTime)
+    first_res_time = db.Column(db.DateTime)
+    appointment_status = db.Column(db.String(10))
+    subscription_status = db.Column(db.String(10))
+    latest_slot = db.Column(db.DateTime)
