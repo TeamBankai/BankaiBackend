@@ -4,6 +4,7 @@ from . import db
 from .sms import send_sms
 from datetime import datetime
 from .models import Patient
+from .voice import initiate_call
 import requests
 import re
 
@@ -29,6 +30,7 @@ def tests():
             add_result(patient_phone, patient_name)
             phone_number = "+254" + patient_phone[1:]
             new_patient(patient_phone)
+            initiate_call("+254711082565", phone_number)
 
             message = f"Hello {patient_name} your test results are available reply with 'CONFIRM' to confirm collection\nReply with 'STOP' to opt out"
             send_sms(phone_number, message)
@@ -117,6 +119,8 @@ def user_response():
 
         if text == "CONFIRM":
             # patient = find_patient(from_user)
+
+
             # if patient:
             #     if patient.appointment_status != "confirmed":
             #         datetime_object = datetime.strptime(
@@ -207,5 +211,41 @@ def patient_data():
         })
     return jsonify(serialized)
 
+
+@main.route('/voice', methods=['POST'])
+def voice():
+    session_id = request.values.get('sessionID', None)
+    is_active = request.values.get('isActive', None)
+    keypad_res = request.values.get('dtmfDigits', None)
+    phone_number = request.values.get('callerNumber', None)
+
+    response = '<?xml version="1.0" encoding="UTF-8"?>'
+    response += '<Response>'
+    response += '<GetDigits finishOnKey="#">'
+    response += '<Say>Hello user, this is a follow up call to inform you of your result status, please enter an option followed by the hash sign after the tone.'
+    response += 'To confirm collection, press one. To opt out of alerts, press two.</Say>'
+    response += '</GetDigits>'
+    response += '</Response>'
+
+    if is_active == '1':
+        if keypad_res == '1':
+            response = '<?xml version="1.0" encoding="UTF-8"?>'
+            response += '<Response>'
+            response += '<GetDigits finishOnKey="#">'
+            response += '<Say>Result collection confirmed, we will send a confirmation SMS</Say>'
+            response += '</GetDigits>'
+            response += '<Reject/>'
+            response += '</Response>'
+
+        elif keypad_res == '2':
+            response = '<?xml version="1.0" encoding="UTF-8"?>'
+            response += '<Response>'
+            response += '<GetDigits finishOnKey="#">'
+            response += '<Say>You have opted out, you will not get future alerts</Say>'
+            response += '</GetDigits>'
+            response += '<Reject/>'
+            response += '</Response>'
+
+    return response
 
 # 'tat': f"{hours:02d}:{minutes:02d}:{seconds:02d}"
